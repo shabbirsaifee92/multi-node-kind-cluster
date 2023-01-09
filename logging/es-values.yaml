@@ -1,0 +1,25 @@
+# Permit co-located instances for solitary minikube virtual machines.
+antiAffinity: "soft"
+replicas: 1
+minimumMasterNodes: 1
+
+# Allocate smaller chunks of memory per pod.
+resources:
+  requests:
+    cpu: "100m"
+    memory: "512M"
+  limits:
+    cpu: "1000m"
+    memory: "512M"
+
+# Request smaller persistent volumes.
+volumeClaimTemplate:
+  accessModes: [ "ReadWriteOnce" ]
+  storageClassName: "standard"
+  resources:
+    requests:
+      storage: 2G
+
+secret:
+  enabled: true
+  password: "elastic"

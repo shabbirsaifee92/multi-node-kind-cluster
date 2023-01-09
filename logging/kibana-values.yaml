@@ -1,0 +1,8 @@
+# Adjust cpu and memory 
+resources:
+  requests:
+    cpu: "100m"
+    memory: "512M"
+  limits:
+    cpu: "1000m"
+    memory: "512M"
