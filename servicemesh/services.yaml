@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-a
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: service-a
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: service-a
+  name: service-a
+spec:
+  containers:
+  - image: nginx
+    name: service-a
+    ports:
+    - containerPort: 80
+    resources:
+      limits:
+        cpu: 100m
+        memory: 200M
+      requests:
+        cpu: 10m
+        memory: 50M
+  restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-b
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: service-b
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: service-b
+  name: service-b
+spec:
+  containers:
+  - image: nginx
+    name: service-b
+    ports:
+    - containerPort: 80
+    resources:
+      limits:
+        cpu: 100m
+        memory: 200M
+      requests:
+        cpu: 10m
+        memory: 50M
