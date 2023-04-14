@@ -18,4 +18,4 @@ echo  "Install grafana"
 echo  "*******************************************************************************************************************"
 helm install grafana grafana/grafana -n monitoring -f grafana-value.yaml
 
-echo  "To access grafana run 'kubectl port--forward svc/grafana 8080:80 -n monitoring'"
+echo  "To access grafana run 'kubectl port-forward svc/grafana 8080:80 -n monitoring'"
