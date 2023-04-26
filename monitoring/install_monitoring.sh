@@ -1,4 +1,6 @@
 #!/bin/bash
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 clear
 
 echo "*******************************************************************************************************************"
@@ -13,9 +15,14 @@ echo "Install prometheus"
 echo "*******************************************************************************************************************"
 helm install prometheus prometheus-community/prometheus -n monitoring --create-namespace
 
+echo -e "\n*******************************************************************************************************************"
+echo -e "Waiting for prometheus to be ready"
+echo -e "*******************************************************************************************************************"
+kubectl wait pods --for=condition=Ready -l app=prometheus -n monitoring
+
 echo  "*******************************************************************************************************************"
 echo  "Install grafana"
 echo  "*******************************************************************************************************************"
-helm install grafana grafana/grafana -n monitoring -f grafana-value.yaml
+helm install grafana grafana/grafana -n monitoring -f "$SCRIPT_DIR"/grafana-value.yaml
 
 echo  "To access grafana run 'kubectl port-forward svc/grafana 8080:80 -n monitoring'"

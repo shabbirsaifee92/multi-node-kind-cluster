@@ -1,4 +1,5 @@
 #!/bin/bash
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 echo "\n*******************************************************************************************************************"
 echo "Installing Kind"
@@ -8,7 +9,7 @@ brew update && brew install kind
 echo "\n*******************************************************************************************************************"
 echo "Creating new kind cluster"
 echo "*******************************************************************************************************************"
-kind create cluster --config config.yaml --name dev
+kind create cluster --config "$SCRIPT_DIR"/config.yaml --name dev
 
 echo "\n*******************************************************************************************************************"
 echo "Installing Nginx Ingress Controller"
