@@ -36,6 +36,6 @@ helm install kiali-server kiali-server --repo https://kiali.org/helm-charts --se
 echo -e "\n*******************************************************************************************************************"
 echo -e "Waiting for kiali to be ready"
 echo -e "*******************************************************************************************************************"
-kubectl wait pods --for=condition=Ready -l app=kiali -n istio-system
+kubectl wait pods --for=condition=Ready -l app=kiali -n istio-system --timeout=60s
 
 echo -e  "To access kiali run 'kubectl port-forward svc/kiali 8080:20001 -n istio-system'"
