@@ -18,11 +18,18 @@ helm install prometheus prometheus-community/prometheus -n monitoring --create-n
 echo -e "\n*******************************************************************************************************************"
 echo -e "Waiting for prometheus to be ready"
 echo -e "*******************************************************************************************************************"
-kubectl wait pods --for=condition=Ready -l app=prometheus -n monitoring
+kubectl wait pods --for=condition=Ready -l app=prometheus -n monitoring --timeout=120s
 
 echo  "*******************************************************************************************************************"
 echo  "Install grafana"
 echo  "*******************************************************************************************************************"
 helm install grafana grafana/grafana -n monitoring -f "$SCRIPT_DIR"/grafana-value.yaml
+
+
+echo -e "\n*******************************************************************************************************************"
+echo -e "Waiting for grafana to be ready"
+echo -e "*******************************************************************************************************************"
+kubectl wait pods --for=condition=Ready -l app.kubernetes.io/instance=grafana -n monitoring --timeout=120s
+
 
 echo  "To access grafana run 'kubectl port-forward svc/grafana 8080:80 -n monitoring'"
