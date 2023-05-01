@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -euo  pipefail
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
@@ -15,6 +15,11 @@ echo -e "\n*********************************************************************
 echo -e "Patching istio gateway service"
 echo -e "*******************************************************************************************************************"
 kubectl patch service istio-gateway -n istio-system --patch-file "$SCRIPT_DIR"/gateway-svc-patch.yaml
+
+echo -e "\n*******************************************************************************************************************"
+echo -e "Waiting for istiod to be ready"
+echo -e "*******************************************************************************************************************"
+kubectl wait pods --for=condition=Ready -l app=istiod -n istio-system --timeout=60s
 
 echo -e "\n*******************************************************************************************************************"
 echo -e "Deploying test applications"
@@ -34,8 +39,14 @@ echo -e "***********************************************************************
 helm install kiali-server kiali-server --repo https://kiali.org/helm-charts --set auth.strategy="anonymous" --set external_services.prometheus.url="http://prometheus-server.monitoring" -n istio-system
 
 echo -e "\n*******************************************************************************************************************"
+echo -e "Setup Kiali access"
+echo -e "*******************************************************************************************************************"
+kubectl apply -f kiali-vs.yaml -n istio-system
+
+
+echo -e "\n*******************************************************************************************************************"
 echo -e "Waiting for kiali to be ready"
 echo -e "*******************************************************************************************************************"
 kubectl wait pods --for=condition=Ready -l app=kiali -n istio-system --timeout=60s
 
-echo -e  "To access kiali run 'kubectl port-forward svc/kiali 8080:20001 -n istio-system'"
+echo -e  "To access kiali open '127.0.0.1/kiali' in your browser"
