@@ -1,0 +1,180 @@
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: giggle-box
+  namespace: default
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: giggle-box
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: giggle-box
+  namespace: default
+data:
+  index.html: |
+    <html>
+      <head>
+        <title>GiggleBox</title>
+        <style>
+          img {
+            max-width: 100%;
+            height: auto;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>GiggleBox Version 1</h1>
+        <img src="https://media.giphy.com/media/SAAMcPRfQpgyI/giphy.gif" alt="funny image">
+      </body>
+    </html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: giggle-box-v1
+  labels:
+    app: giggle-box
+    version: v1
+spec:
+  selector:
+    matchLabels:
+      app: giggle-box
+  template:
+    metadata:
+      labels:
+        app: giggle-box
+        version: v1
+    spec:
+      volumes:
+      - name: giggle-box
+        configMap:
+          name: giggle-box
+      containers:
+      - image: nginx
+        name: giggle-box
+        volumeMounts:
+        - name: giggle-box
+          mountPath: /usr/share/nginx/html/
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 100m
+            memory: 200M
+          requests:
+            cpu: 10m
+            memory: 50M
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: giggle-box-v2
+  namespace: default
+data:
+  index.html: |
+    <html>
+      <head>
+        <title>GiggleBox</title>
+        <style>
+          img {
+            max-width: 100%;
+            height: auto;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>GiggleBox Version 2</h1>
+        <img src="https://media.giphy.com/media/5wWf7H89PisM6An8UAU/giphy.gif" alt="funny image">
+      </body>
+    </html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: giggle-box-v2
+  labels:
+    app: giggle-box
+    version: v2
+spec:
+  selector:
+    matchLabels:
+      app: giggle-box
+  template:
+    metadata:
+      labels:
+        app: giggle-box
+        version: v2
+    spec:
+      volumes:
+      - name: giggle-box
+        configMap:
+          name: giggle-box-v2
+      containers:
+      - image: nginx
+        name: giggle-box
+        volumeMounts:
+        - name: giggle-box
+          mountPath: /usr/share/nginx/html/
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 100m
+            memory: 200M
+          requests:
+            cpu: 10m
+            memory: 50M
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: istio-vs
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - istio-gateway
+  http:
+  - name: 'giggle-box'
+    match:
+    - uri:
+        prefix: /giggle-box
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        subset: v1
+        host: giggle-box
+        port:
+          number: 80
+      weight: 80
+    - destination:
+        subset: v2
+        host: giggle-box
+        port:
+          number: 80
+      weight: 20
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: giggle-box
+spec:
+  host: giggle-box
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2

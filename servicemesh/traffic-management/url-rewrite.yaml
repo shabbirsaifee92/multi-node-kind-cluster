@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: recipes
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: recipes
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recipes
+  namespace: default
+data:
+  index.html: |
+    <html>
+      <head>
+        <title>recipes</title>
+        <style>
+          img {
+            max-width: 100%;
+            height: auto;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>recipes</h1>
+        <img src="https://www.mygorgeousrecipes.com/wp-content/uploads/2022/01/Eggless-Tiramisu-with-No-Alcohol-10.jpg" alt="tiramisu">
+      </body>
+    </html>
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: recipes
+  name: recipes
+spec:
+  volumes:
+  - name: recipes
+    configMap:
+      name: recipes
+  containers:
+  - image: nginx
+    name: recipes
+    volumeMounts:
+    - name: recipes
+      mountPath: /usr/share/nginx/html/
+    ports:
+    - containerPort: 80
+    resources:
+      limits:
+        cpu: 100m
+        memory: 200M
+      requests:
+        cpu: 10m
+        memory: 50M
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: istio-vs
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - istio-gateway
+  http:
+  - name: 'recipes'
+    match:
+    - uri:
+        prefix: /tiramisu
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        port:
+          number: 80
+        host: recipes
