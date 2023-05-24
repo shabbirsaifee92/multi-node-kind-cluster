@@ -41,7 +41,7 @@ helm install kiali-server kiali-server --repo https://kiali.org/helm-charts --se
 echo -e "\n*******************************************************************************************************************"
 echo -e "Setup Kiali access"
 echo -e "*******************************************************************************************************************"
-kubectl apply -f kiali-vs.yaml -n istio-system
+kubectl apply -f "$SCRIPT_DIR/kiali-vs.yaml" -n istio-system
 
 
 echo -e "\n*******************************************************************************************************************"
