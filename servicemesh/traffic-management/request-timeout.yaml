@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: giggle-box
+  name: slow-http
   namespace: default
 spec:
   ports:
@@ -10,29 +10,29 @@ spec:
     protocol: TCP
     targetPort: 8080
   selector:
-    app: giggle-box
+    app: slow-http
 ---
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: giggle-box-v1
+  name: slow-http-v1
   labels:
-    app: giggle-box
+    app: slow-http
     version: v1
 spec:
   selector:
     matchLabels:
-      app: giggle-box
+      app: slow-http
   template:
     metadata:
       labels:
-        app: giggle-box
+        app: slow-http
         version: v1
     spec:
       containers:
       - image: kishanb/slow-http:1.0.1
-        name: giggle-box
+        name: slow-http
         env:
           - name: DELAY_RESPONSE
             value: 0.1s
@@ -57,15 +57,15 @@ spec:
   gateways:
   - istio-gateway
   http:
-  - name: 'giggle-box'
+  - name: 'slow-http'
     match:
     - uri:
-        prefix: /giggle-box
+        prefix: /slow-http
     rewrite:
       uri: "/"
     route:
     - destination:
-        host: giggle-box
+        host: slow-http
         port:
           number: 8080
     timeout: 0.5s
