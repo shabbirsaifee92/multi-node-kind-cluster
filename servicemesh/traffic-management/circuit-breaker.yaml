@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fortio
+  labels:
+    app: fortio
+    service: fortio
+spec:
+  ports:
+  - port: 8080
+    name: http
+  selector:
+    app: fortio
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fortio-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fortio
+  template:
+    metadata:
+      annotations:
+        # This annotation causes Envoy to serve cluster.outbound statistics via 15000/stats
+        # in addition to the stats normally served by Istio. The Circuit Breaking example task
+        # gives an example of inspecting Envoy stats via proxy config.
+        proxy.istio.io/config: |-
+          proxyStatsMatcher:
+            inclusionPrefixes:
+            - "cluster.outbound"
+            - "cluster_manager"
+            - "listener_manager"
+            - "server"
+            - "cluster.xds-grpc"
+      labels:
+        version: v1
+        app: fortio
+    spec:
+      containers:
+      - name: fortio
+        image: fortio/fortio:latest_release
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http-fortio
+        - containerPort: 8079
+          name: grpc-ping
+        resources:
+          limits:
+            cpu: 500m
+            memory: 500M
+          requests:
+            cpu: 10m
+            memory: 50M
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin
+  namespace: default
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: httpbin
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+  labels:
+    app: httpbin
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        version: v1
+        app: httpbin
+    spec:
+      containers:
+      - image: docker.io/kong/httpbin
+        name: httpbin
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 100m
+            memory: 200M
+          requests:
+            cpu: 10m
+            memory: 50M
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: httpbin
+spec:
+  host: httpbin
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 1
+      http:
+        http1MaxPendingRequests: 1
+        maxRequestsPerConnection: 1
+    outlierDetection:
+      baseEjectionTime: 3m
+      consecutive5xxErrors: 1
+      interval: 1s
+      maxEjectionPercent: 100
