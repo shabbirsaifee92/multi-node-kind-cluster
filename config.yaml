@@ -10,3 +10,6 @@ nodes:
     hostPort: 443
   - containerPort: 2222
     hostPort: 2222
+networking:
+  disableDefaultCNI: true
+  podSubnet: 192.168.0.0/16 # set to Calico's default subnet

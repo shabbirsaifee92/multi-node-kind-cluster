@@ -12,6 +12,12 @@ echo "**************************************************************************
 kind create cluster --config "$SCRIPT_DIR"/config.yaml --name dev
 
 echo "\n*******************************************************************************************************************"
+echo "Installing Calico"
+echo "*******************************************************************************************************************"
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/tigera-operator.yaml
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/custom-resources.yaml
+
+echo "\n*******************************************************************************************************************"
 echo "Installing Nginx Ingress Controller"
 echo "*******************************************************************************************************************"
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
