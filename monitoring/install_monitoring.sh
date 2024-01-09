@@ -18,7 +18,7 @@ helm install prometheus prometheus-community/prometheus -n monitoring --create-n
 echo -e "\n*******************************************************************************************************************"
 echo -e "Waiting for prometheus to be ready"
 echo -e "*******************************************************************************************************************"
-kubectl wait pods --for=condition=Ready -l app=prometheus -n monitoring --timeout=120s
+kubectl wait pods --for=condition=Ready -l app.kubernetes.io/name=prometheus -n monitoring --timeout=120s
 
 echo  "*******************************************************************************************************************"
 echo  "Install grafana"
