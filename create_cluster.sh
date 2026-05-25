@@ -18,11 +18,17 @@ kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/custom-resources.yaml
 
 echo "\n*******************************************************************************************************************"
+echo "Labeling worker node"
+echo "*******************************************************************************************************************"
+kubectl label node dev-worker ingress-ready=true
+
+echo "\n*******************************************************************************************************************"
 echo "Installing Nginx Ingress Controller"
 echo "*******************************************************************************************************************"
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
 
 echo "\n*******************************************************************************************************************"
-echo "Labeling work node"
+echo "Pinning ingress controller to the worker node"
 echo "*******************************************************************************************************************"
-kubectl label node dev-worker ingress-ready=true
+kubectl patch deployment ingress-nginx-controller -n ingress-nginx \
+  -p '{"spec":{"template":{"spec":{"nodeSelector":{"ingress-ready":"true"}}}}}'
